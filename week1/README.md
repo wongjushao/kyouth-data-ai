@@ -85,21 +85,25 @@ If you run `ingest` with an empty or missing `0_source` directory, you will see 
 - **What We Did:** Setup folder-based Medallion Architecture `(0_source to 3_gold)`. Extracted raw `.mhtml` files to `1_bronze/`.
 - **Industry Context:** Modern data platforms often use ***Data Lakes*** to store raw files before transforming them into structured, query-ready data in a ***Data Warehouse**.*
 - **Reflection:** Why is it useful to keep the original raw HTML files instead of directly inserting processed data into the database? What problems become easier to debug or recover from?
+- **Answer:** Auditability and disputes. For research, compliance, or “what did the page actually say on date X?”, raw captures support provenance: you can show what was ingested, not just your interpretation of it.
 
 ### Module 2: Treatment Plant (ETL vs ELT & Scale)
 
 - **What We Did:** Clean HTML `(transform into 2_silver/)` before database load `(load into 3_gold/)` (ETL).
 - **Industry Context:** Cloud platforms ***(Snowflake/BigQuery)*** often store raw data first then transform later ***(ELT)***. Enterprise systems use ***Apache Spark*** to process large amounts of data in parallel instead of one file at a time.
 - **Reflection:** Why do cloud systems prefer loading raw data first before cleaning it (ELT)? What problems happen when processing files sequentially, and how does distributed processing help?
+- **Answer:** Separation of concerns. Landing raw data gives you a durable source of truth. Cleaning rules change over time; with raw data stored, you can re-run transformations without re-extracting from operational systems.
 
 ### Module 3: The Blueprint & The Vault (Storage & Contracts)
 
 - **What We Did:** Used SQLite as Gold “warehouse” layer. Enforced basic data integrity via idempotency during load.
 - **Industry Context:** Production systems often separate databases used for day-to-day application operations ***(OLTP)*** from databases optimized for analytics and reporting ***(OLAP)***. Strict Data Contracts help ensure incomplete or corrupted data does not break dashboards, analytics, or downstream systems.
 - **Reflection:** What should happen if an important field like `job_title` disappears? Why fail early instead of silently inserting `nulls` into DB? How does `INSERT OR IGNORE` help prevent duplicate records?
+- **Answer:** Schema and constraints. SQLite will reject inserts that violate NOT NULL on job_title. Silently turning missing into NULL either breaks the insert anyway or forces you to weaken the schema (e.g. drop NOT NULL), which makes bad data look “valid.”
 
 ### Module 4: The QA Inspector & Orchestrator (Orchestration & DAGs)
 
 - **What We Did:** `main.py` acts as manual orchestrator, `all` command finalizes sequence
 - **Industry Context:** Real-world pipelines usually use orchestration tools like ***Airflow***, which automate execution, retries, scheduling, and dependency management.
 - **Reflection:** What happens if `processor.py` crashes halfway? How are automated orchestration tools more reliable than manual retries with Python scripts?
+- **Answer:** Observability. Run history, logs per task, alerts when a DAG/task fails. Manual runs often leave no durable audit trail.

@@ -1,5 +1,3 @@
-"""CLI orchestrator for the Week 1 medallion pipeline."""
-
 from __future__ import annotations
 
 import sys
@@ -9,10 +7,10 @@ WEEK1_ROOT = Path(__file__).resolve().parent
 if str(WEEK1_ROOT) not in sys.path:
     sys.path.insert(0, str(WEEK1_ROOT))
 
-from src.ingestor import ingest_all_mhtml  # noqa: E402
-from src.loader import load_all_jsons  # noqa: E402
-from src.processor import process_all_html  # noqa: E402
-from src.profiler import run_data_profile  # noqa: E402
+from src.ingestor import ingest_all_mhtml
+from src.loader import load_all_jsons
+from src.processor import process_all_html
+from src.profiler import run_data_profile
 
 DATA_DIR = WEEK1_ROOT / "data"
 SOURCE_DIR = DATA_DIR / "0_source"
