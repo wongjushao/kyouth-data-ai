@@ -1,4 +1,7 @@
 week1/data/
+week2/.env
+week2/data/jobs_d1.db
+week2/.venv/
 **/__pycache__/
 .ruff_cache/
 .venv/

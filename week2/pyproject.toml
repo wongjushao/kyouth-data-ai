@@ -1,0 +1,16 @@
+[project]
+name = "week2"
+version = "0.1.0"
+description = "Week 2: LLM setup with Ollama and Google Gemini"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "google-genai>=1.0.0",
+    "httpx>=0.28.0",
+    "mcp>=1.27.1",
+    "pydantic>=2.0.0",
+]
+
+[project.scripts]
+prompt-model = "prompt_model:main"
+skills-mcp-server = "skills_mcp_server:main"
