@@ -13,7 +13,7 @@ Pipeline code, dependencies, and sample data live under **`week1/`**.
 ### Prerequisites
 
 - **Python 3.14** (see `week1/.python-version`; `pyproject.toml` declares `requires-python = ">=3.14"`).
-- **[uv](https://docs.astral.sh/uv/)** for installing dependencies and running the app in an isolated environment.
+- **[uv](https://docs.astral.sh/uv/) 0.8.x** — `pyproject.toml` requires `>=0.8.0,<0.9.0`. Install with: `curl -LsSf https://astral.sh/uv/0.8.22/install.sh | sh`
 
 ### Install dependencies
 

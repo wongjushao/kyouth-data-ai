@@ -18,9 +18,9 @@ All code and sample data live under **`week2/`**.
 ### Prerequisites
 
 - **Python 3.12+** (`week2/pyproject.toml` sets `requires-python = ">=3.12"`).
-- **[uv](https://docs.astral.sh/uv/)** — installs dependencies and runs scripts in an isolated environment.
+- **[uv](https://docs.astral.sh/uv/) 0.8.x** — `pyproject.toml` sets `required-version = ">=0.8.0,<0.9.0"`. Install with: `curl -LsSf https://astral.sh/uv/0.8.22/install.sh | sh`
 - **Google Gemini API key** — required for the default models (`gemini-2.5-flash-lite`). Sign up via [Google AI Studio](https://aistudio.google.com/) and create an API key.
-- **Ollama** (optional) — only needed if you switch models to local Ollama names such as `llama3.1` or `phi3`. Install from [ollama.com](https://ollama.com/) and ensure the daemon is running (`curl http://127.0.0.1:11434`).
+- **Ollama 0.21.0** (optional) — for local models (`llama3.1`, `phi3`, `deepseek-r1:1.5b`). Install that version from [ollama.com](https://ollama.com/) and verify with `ollama -v`. Ensure the daemon is running (`curl http://127.0.0.1:11434`).
 
 ### Install dependencies
 
@@ -73,7 +73,7 @@ uv run prompt_model.py gemini-2.5-flash-lite "Say hi in one word"
 
 ### 2. Tag jobs (populate `tech_stack`)
 
-Processes rows where `tech_stack` is NULL or empty, in batches of 5, using the LLM.
+Processes rows where `tech_stack` is NULL or empty, in batches sized from `rate_limits.txt` (RPM, TPM, and max batch per model), using the LLM.
 
 ```bash
 uv run tag_data.py

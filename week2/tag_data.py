@@ -10,8 +10,8 @@ from pathlib import Path
 from typing import Any
 
 from prompt_model import prompt_model
+from rate_limits import compute_batch_size
 
-BATCH_SIZE = 5
 MAX_RETRIES = 3
 RETRY_BASE_SECONDS = 2.0
 MAX_DESCRIPTION_CHARS = 2500
@@ -244,6 +244,7 @@ def tag_data(db_url: str) -> None:
         return
 
     model = DEFAULT_MODEL
+    batch_size = compute_batch_size(model)
     tokens_holder = [0]
 
     try:
@@ -271,8 +272,8 @@ def tag_data(db_url: str) -> None:
             return
 
         batch_index = 0
-        for offset in range(0, len(rows), BATCH_SIZE):
-            batch = rows[offset : offset + BATCH_SIZE]
+        for offset in range(0, len(rows), batch_size):
+            batch = rows[offset : offset + batch_size]
             results = _process_batch(batch, batch_index, model, tokens_holder)
             batch_index += 1
 
