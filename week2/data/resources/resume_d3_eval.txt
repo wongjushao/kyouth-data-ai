@@ -1,8 +1,0 @@
-KURAKURA PENYU
-Backend developer
-
-SKILLS
-Technical Skills: Python, SQL, Java, R, Pandas, NumPy, Scikit-learn, TensorFlow, PyTorch, Docker, Kubernetes, Git, CI/CD, A/B Testing, Tableau, Azure, C, C++, PowerShell, MySQL
-
-SUMMARY
-Experienced backend developer with data and ML stack experience.

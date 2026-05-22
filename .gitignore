@@ -5,3 +5,4 @@ week2/.venv/
 **/__pycache__/
 .ruff_cache/
 .venv/
+week2/data/*

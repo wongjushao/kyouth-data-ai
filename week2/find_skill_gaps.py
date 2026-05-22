@@ -402,6 +402,23 @@ def main() -> None:
     if len(sys.argv) > 2:
         db_path = sys.argv[2]
 
+    resume_file = Path(resume_path)
+    db_file = Path(db_path)
+
+    missing: list[str] = []
+
+    if not resume_file.is_file():
+        missing.append(f"resume file not found: {resume_path}")
+
+    if not db_file.is_file():
+        missing.append(f"db file not found: {db_path}")
+
+    if missing:
+        for m in missing:
+            print(f"Error: {m}", file=sys.stderr)
+        print("Usage: python find_skill_gaps.py [resume_path] [db_path]", file=sys.stderr)
+        sys.exit(2)
+
     result = find_skill_gaps(
         resume_path,
         db_path,
