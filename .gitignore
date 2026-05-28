@@ -6,3 +6,7 @@ week2/.venv/
 .ruff_cache/
 .venv/
 week2/data/*
+week3/.env
+week3/**/.venv/
+week_3/.env
+week_3/**/.venv/

@@ -1,0 +1,42 @@
+services:
+  backend:
+    image: backend
+    pull_policy: build
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://host.docker.internal:11434}
+      JOBS_DB_PATH: ${JOBS_DB_PATH:-/app/data/jobs_d1.db}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ../week2/data:/app/data:ro
+    networks:
+      - app-network
+
+  frontend:
+    image: frontend
+    pull_policy: build
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:8000"
+    env_file:
+      - .env
+    environment:
+      # Browser calls the API on the host-mapped backend port, not the Docker service name.
+      BACKEND_URL: http://127.0.0.1:8000
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

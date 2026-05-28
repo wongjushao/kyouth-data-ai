@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Resume Helper Chatbot</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <style>
+      body {
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .chat-shell {
+        height: 100vh;
+        max-width: 900px;
+      }
+
+      .chat-history {
+        overflow-y: auto;
+        min-height: 0;
+      }
+
+      .message-user {
+        background-color: #0d6efd;
+        color: #fff;
+      }
+
+      .message-assistant {
+        background-color: #e9ecef;
+        color: #212529;
+      }
+
+      .message-error {
+        background-color: #f8d7da;
+        color: #842029;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <div class="container chat-shell d-flex flex-column py-3">
+      <header class="mb-3">
+        <h1 class="h3 mb-1">Resume Helper Chatbot</h1>
+        <p class="text-muted small mb-0">
+          Messages are sent as JSON to the backend configured in <code>BACKEND_URL</code>.
+        </p>
+      </header>
+
+      <div
+        id="chat-history"
+        class="chat-history flex-grow-1 border rounded bg-white p-3 mb-3"
+        aria-live="polite"
+      ></div>
+
+      <form id="chat-form" class="border rounded bg-white p-3">
+        <div class="mb-2">
+          <label for="pdf-upload" class="form-label small text-muted mb-1"
+            >Attach PDF (optional)</label
+          >
+          <input
+            class="form-control form-control-sm"
+            type="file"
+            id="pdf-upload"
+            accept="application/pdf"
+          />
+          <div id="pdf-status" class="form-text"></div>
+        </div>
+        <div class="input-group">
+          <textarea
+            id="message-input"
+            class="form-control"
+            rows="2"
+            placeholder="Ask about your resume or skills..."
+            required
+          ></textarea>
+          <button class="btn btn-primary" type="submit" id="send-button">Send</button>
+        </div>
+      </form>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+      pdfjsLib.GlobalWorkerOptions.workerSrc =
+        "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+      const BACKEND_URL = {{ backend_url | tojson }};
+      const CHAT_ENDPOINT = `${BACKEND_URL.replace(/\/$/, "")}/chat`;
+
+      const chatHistory = document.getElementById("chat-history");
+      const chatForm = document.getElementById("chat-form");
+      const messageInput = document.getElementById("message-input");
+      const pdfUpload = document.getElementById("pdf-upload");
+      const pdfStatus = document.getElementById("pdf-status");
+      const sendButton = document.getElementById("send-button");
+
+      function appendMessage(text, role) {
+        const wrapper = document.createElement("div");
+        wrapper.className = `mb-2 d-flex ${role === "user" ? "justify-content-end" : "justify-content-start"}`;
+
+        const bubble = document.createElement("div");
+        bubble.className = `rounded px-3 py-2 message-${role}`;
+        bubble.style.maxWidth = "85%";
+        bubble.style.whiteSpace = "pre-wrap";
+        bubble.textContent = text;
+
+        wrapper.appendChild(bubble);
+        chatHistory.appendChild(wrapper);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+      }
+
+      async function extractPdfText(file) {
+        const data = new Uint8Array(await file.arrayBuffer());
+        const pdf = await pdfjsLib.getDocument({ data }).promise;
+        const parts = [];
+
+        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum += 1) {
+          const page = await pdf.getPage(pageNum);
+          const content = await page.getTextContent();
+          parts.push(content.items.map((item) => item.str).join(" "));
+        }
+
+        return parts.join("\n").trim();
+      }
+
+      chatForm.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const message = messageInput.value.trim();
+        if (!message) {
+          return;
+        }
+
+        let pdfText = "";
+        const pdfFile = pdfUpload.files[0];
+
+        sendButton.disabled = true;
+        sendButton.textContent = "Sending...";
+
+        try {
+          if (pdfFile) {
+            pdfStatus.textContent = "Extracting text from PDF...";
+            pdfText = await extractPdfText(pdfFile);
+            pdfStatus.textContent = pdfText
+              ? `PDF loaded (${pdfText.length} characters extracted).`
+              : "PDF loaded but no text could be extracted.";
+          } else {
+            pdfStatus.textContent = "";
+          }
+
+          appendMessage(message, "user");
+
+          const response = await fetch(CHAT_ENDPOINT, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              message,
+              pdf_text: pdfText,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorBody = await response.text();
+            throw new Error(errorBody || `Request failed with status ${response.status}`);
+          }
+
+          const data = await response.json();
+          appendMessage(data.reply ?? JSON.stringify(data), "assistant");
+        } catch (error) {
+          appendMessage(
+            `Could not reach the backend (${CHAT_ENDPOINT}): ${error.message}`,
+            "error",
+          );
+        } finally {
+          messageInput.value = "";
+          pdfUpload.value = "";
+          sendButton.disabled = false;
+          sendButton.textContent = "Send";
+        }
+      });
+    </script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>
