@@ -30,7 +30,6 @@ services:
     env_file:
       - .env
     environment:
-      # Browser calls the API on the host-mapped backend port, not the Docker service name.
       BACKEND_URL: http://127.0.0.1:8000
     depends_on:
       - backend
