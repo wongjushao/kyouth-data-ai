@@ -364,9 +364,7 @@ def find_skill_gaps(
 
         llm_skills, tokens = extract_llm_skills(resume)
 
-        resume_skills = {
-            normalize_skill(s) for s in resume_skills | llm_skills
-        }
+        resume_skills = {normalize_skill(s) for s in resume_skills | llm_skills}
 
         required_skills = load_required_skills(db_url)
 
@@ -416,7 +414,9 @@ def main() -> None:
     if missing:
         for m in missing:
             print(f"Error: {m}", file=sys.stderr)
-        print("Usage: python find_skill_gaps.py [resume_path] [db_path]", file=sys.stderr)
+        print(
+            "Usage: python find_skill_gaps.py [resume_path] [db_path]", file=sys.stderr
+        )
         sys.exit(2)
 
     result = find_skill_gaps(
@@ -424,11 +424,7 @@ def main() -> None:
         db_path,
     )
 
-    print(
-        f"gaps={result.gaps!r} "
-        f"time={int(result.time)} "
-        f"tokens={result.tokens}"
-    )
+    print(f"gaps={result.gaps!r} time={int(result.time)} tokens={result.tokens}")
 
 
 if __name__ == "__main__":

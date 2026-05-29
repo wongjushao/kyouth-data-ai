@@ -183,8 +183,10 @@ def _call_model(model: str, prompt: str) -> tuple[str, int]:
             pass
 
     text = prompt_model(model, prompt)
-    if text.startswith("[Gemini Error]") or text.startswith("[Ollama Error]") or text.startswith(
-        "[Error]"
+    if (
+        text.startswith("[Gemini Error]")
+        or text.startswith("[Ollama Error]")
+        or text.startswith("[Error]")
     ):
         raise RuntimeError(text)
     return text, max(1, (len(prompt) + len(text)) // 4)
@@ -211,7 +213,9 @@ def _process_batch(
     combined: list[tuple[str, str]] = []
     for job_id, title, desc in batch:
         try:
-            raw, tokens = _call_model(model, _build_batch_prompt([(job_id, title, desc)]))
+            raw, tokens = _call_model(
+                model, _build_batch_prompt([(job_id, title, desc)])
+            )
             tokens_used[0] += tokens
             combined.extend(_normalize_batch_results([(job_id, title, desc)], raw))
         except (ValueError, json.JSONDecodeError, RuntimeError) as exc:
@@ -308,7 +312,9 @@ def main() -> None:
     if len(sys.argv) > 1:
         db_url = sys.argv[1]
     else:
-        db_url = next((str(p) for p in default_paths if p.is_file()), str(default_paths[0]))
+        db_url = next(
+            (str(p) for p in default_paths if p.is_file()), str(default_paths[0])
+        )
 
     try:
         tag_data(db_url)
